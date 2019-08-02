@@ -265,6 +265,12 @@ class HttpLayer(base.Layer):
                     self.send_error_response(400, msg)
                     raise exceptions.ProtocolException(msg)
 
+            user_agent = request.headers.get("user-agent", "")
+            if user_agent.startswith('kube-probe/') or user_agent.startswith('GoogleHC/'):
+                flow.response = http.HTTPResponse.make(200, b"OK")
+                self.send_response(flow.response)
+                return True
+
             validate_request_form(self.mode, request)
             self.channel.ask("requestheaders", f)
             # Re-validate request form in case the user has changed something.
